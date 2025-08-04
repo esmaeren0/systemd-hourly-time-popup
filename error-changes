@@ -1,0 +1,40 @@
+Systemd servis dosyalarında ExecStart içinde $(...) gibi shell komut genişletmeleri doğrudan çalışmaz. 
+Çünkü systemd, ExecStart komutunu kabuk yorumlayıcısı olmadan doğrudan çalıştırır. 
+Bu yüzden $(date +%H:%M:%S) ifadesi shell tarafından işlenmedi, hatalı bir parametre olarak xmessage' a gitti.
+
+HATALI KOMUT:
+
+ ```bash
+[Unit]
+Description= hourly time notification
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/timeout 10 /usr/bin/xmessage -center "$(date +%H:%M:%S)"
+```
+---------------------------------------------------------------------------------------------
+ÇÖZÜM: 
+
+Saati göstermek için gereken komutu küçük bir bash script içine yazıldı.(show-time.sh).
+
+nano ~/.config/systemd/user/show-time.sh
+```bash  #!/bin/bash
+DISPLAY=:0.0 /usr/bin/timeout 10 /usr/bin/xmessage -center "$(date +%H:%M:%S)"
+```
+---------------------------------------------------------------------------------
+
+Ardından service dosyası (show-hourly.service) yeniden düzenlendi. Düzenlenmiş hali: 
+
+```bash
+nano ~/.config/systemd/user/show-hourly.service // service dosyası
+[Unit]
+Description= hourly time notification
+[Service]
+Type=oneshot
+ExecStart=/home/esmaerenesmaeren/.config/systemd/user/show-time.sh
+```
+------------------------------------------------------------------------------
+SONUÇ:
+Servis dosyalarında ExecStart içinde karmaşık shell ifadeleri (komut genişletme, pipe, &&  >, < gibi) varsa:
+Bunları doğrudan yazmadan, küçük bir script dosyası yapılarak ve oluşturulan dosya çalıştırılmalı.
+
