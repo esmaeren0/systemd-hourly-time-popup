@@ -1,8 +1,8 @@
-Systemd servis dosyalarında ExecStart içinde $(...) gibi shell komut genişletmeleri doğrudan çalışmaz. 
-Çünkü systemd, ExecStart komutunu kabuk yorumlayıcısı olmadan doğrudan çalıştırır. 
-Bu yüzden $(date +%H:%M:%S) ifadesi shell tarafından işlenmedi, hatalı bir parametre olarak xmessage' a gitti.
+Shell command expansions like $(...) do not work directly within ExecStart in systemd service files.
+This is because systemd runs the ExecStart command directly, without a shell interpreter.
+Therefore, the expression $(date +%H:%M:%S) was not processed by the shell but passed to xmessage as an incorrect parameter.
 
-HATALI KOMUT:
+ERROR COMMAND:
 
  ```bash
 [Unit]
@@ -13,9 +13,9 @@ Type=oneshot
 ExecStart=/usr/bin/timeout 10 /usr/bin/xmessage -center "$(date +%H:%M:%S)"
 ```
 ---------------------------------------------------------------------------------------------
-ÇÖZÜM: 
+SOLUTION:
 
-Saati göstermek için gereken komutu küçük bir bash script içine yazıldı.(show-time.sh).
+The command required to show the time was written in a small bash script (show-time.sh).
 
 nano ~/.config/systemd/user/show-time.sh
 ```bash  #!/bin/bash
@@ -23,7 +23,8 @@ DISPLAY=:0.0 /usr/bin/timeout 10 /usr/bin/xmessage -center "$(date +%H:%M:%S)"
 ```
 ---------------------------------------------------------------------------------
 
-Ardından service dosyası (show-hourly.service) yeniden düzenlendi. Düzenlenmiş hali: 
+Then the service file (show-hourly.service) was re-edited. 
+Edited version:
 
 ```bash
 nano ~/.config/systemd/user/show-hourly.service // service dosyası
@@ -34,7 +35,7 @@ Type=oneshot
 ExecStart=/home/esmaerenesmaeren/.config/systemd/user/show-time.sh
 ```
 ------------------------------------------------------------------------------
-SONUÇ:
-Servis dosyalarında ExecStart içinde karmaşık shell ifadeleri (komut genişletme, pipe, &&  >, < gibi) varsa:
-Bunları doğrudan yazmadan, küçük bir script dosyası yapılarak ve oluşturulan dosya çalıştırılmalı.
+CONCLUSION:
+If service files contain complex shell expressions (such as command expansion, pipe, && >, <) within ExecStart:
+These expressions should be created by creating a small script file and running the generated file instead of typing them directly.
 
