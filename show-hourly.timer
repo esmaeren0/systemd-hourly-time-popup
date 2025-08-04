@@ -1,0 +1,12 @@
+nano ~/.config/systemd/user/show-hourly.timer // timer file create 
+ 
+ [Unit]
+ Description=Her saat başı bildirimi göster
+ 
+ [Timer]
+ OnCalendar=:00
+ Persistent=false
+ Unit=show-hourly.service
+ 
+ [Install]
+ WantedBy=timers.target
