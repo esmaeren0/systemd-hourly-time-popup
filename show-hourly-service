@@ -1,0 +1,7 @@
+1 nano ~/.config/systemd/user/show-hourly.service // service file create
+2 [Unit]
+3 Description= hourly time notification
+4
+5 [Service]
+6 Type=oneshot
+7 ExecStart=/home/esmaerenesmaeren/.config/systemd/user/show-time.sh
